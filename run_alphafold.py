@@ -240,7 +240,7 @@ def predict_structure(
     random_seed: int,
     models_to_relax: ModelsToRelax,
     model_type: str,
-    initial_guess_pdb: str | None = None,
+    initial_guess_pdb_path: str | None = None,
 ):
   """Predicts structure using AlphaFold for the given sequence."""
   logging.info('Predicting %s', fasta_name)
@@ -270,8 +270,8 @@ def predict_structure(
   relax_metrics = {}
   ranking_confidences = {}
 
-  if initial_guess_pdb is not None:
-    with open(initial_guess_pdb, 'r') as f:
+  if initial_guess_pdb_path is not None:
+    with open(initial_guess_pdb_path, 'r') as f:
       initial_guess_pdb_str = f.read()
     initial_guess_protein = protein.from_pdb_string(initial_guess_pdb_str)
     initial_guess_protein_atom_positions = initial_guess_protein.atom_positions

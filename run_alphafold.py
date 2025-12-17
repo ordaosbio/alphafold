@@ -275,6 +275,8 @@ def predict_structure(
       initial_guess_pdb_str = f.read()
     initial_guess_protein = protein.from_pdb_string(initial_guess_pdb_str)
     initial_guess_protein_atom_positions = initial_guess_protein.atom_positions
+  else:
+    initial_guess_protein_atom_positions = None
 
 
   # Run the models.

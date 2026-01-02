@@ -41,6 +41,7 @@ from alphafold.model import model
 from alphafold.relax import relax
 import jax.numpy as jnp
 import numpy as np
+from initial_guess import add_initial_guess_to_features
 
 # Internal import (7716).
 
@@ -270,14 +271,6 @@ def predict_structure(
   relax_metrics = {}
   ranking_confidences = {}
 
-  if initial_guess_pdb_path is not None:
-    with open(initial_guess_pdb_path, 'r') as f:
-      initial_guess_pdb_str = f.read()
-    initial_guess_protein = protein.from_pdb_string(initial_guess_pdb_str)
-    initial_guess_protein_atom_positions = initial_guess_protein.atom_positions
-  else:
-    initial_guess_protein_atom_positions = None
-
 
   # Run the models.
   num_models = len(model_runners)
@@ -289,9 +282,15 @@ def predict_structure(
     processed_feature_dict = model_runner.process_features(
         feature_dict, random_seed=model_random_seed)
 
-    if initial_guess_protein_atom_positions is not None:
-      # add initial guess atom positions to the feature dict
-      processed_feature_dict['all_atom_positions'] = initial_guess_protein_atom_positions
+    # Add initial guess
+    if initial_guess_pdb_path is not None:
+        processed_feature_dict = add_initial_guess_to_features(
+            feature_dict=feature_dict,
+            processed_feature_dict=processed_feature_dict,
+            initial_guess_pdb_path=initial_guess_pdb_path,
+            model_runner=model_runner,
+            strategy='prev_pos'
+        )
 
     timings[f'process_features_{model_name}'] = time.time() - t_0
 
@@ -565,8 +564,7 @@ def main(argv):
         benchmark=FLAGS.benchmark,
         random_seed=random_seed,
         models_to_relax=FLAGS.models_to_relax,
-        model_type=model_type,
-        initial_guess_pdb=initial_guess_pdb,
+        model_type=model_type
     )
 
 

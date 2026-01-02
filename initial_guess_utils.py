@@ -12,6 +12,25 @@ from alphafold.common import protein
 from alphafold.common import residue_constants
 from alphafold.model import model
 import logging
+import jax.numpy as jnp
+
+def parse_initial_guess(all_atom_positions) -> jnp.ndarray:
+    '''
+    Given a numpy array of all atom positions, return a jax array of the initial guess
+    '''
+
+    list_all_atom_positions = np.split(all_atom_positions, all_atom_positions.shape[0])
+
+    templates_all_atom_positions = []
+
+    # Initially fill with zeros
+    for _ in list_all_atom_positions:
+        templates_all_atom_positions.append(jnp.zeros((residue_constants.atom_type_num, 3)))
+
+    for idx in range(len(list_all_atom_positions)):
+        templates_all_atom_positions[idx] = list_all_atom_positions[idx][0] 
+
+    return jnp.array(templates_all_atom_positions)
 
 
 def initialize_prev_pos_with_guess(
@@ -83,10 +102,10 @@ def initialize_prev_pos_with_guess(
             "for multi-chain features. Using basic implementation."
         )
         # You may need to split prev_pos by chain and add to each chain's features
-        processed_feature_dict['prev_pos'] = prev_pos
+        processed_feature_dict['prev_pos'] = jnp.array(prev_pos)
     else:
         # For monomer models, direct assignment works
-        processed_feature_dict['prev_pos'] = prev_pos
+        processed_feature_dict['prev_pos'] = jnp.array(prev_pos)
         
         # Optionally, also initialize other recycling features for stronger conditioning
         # These would need to be computed from the initial structure:
@@ -186,7 +205,7 @@ def load_and_validate_initial_guess(
         return None
 
 
-def sadd_initial_guess_to_features(
+def add_initial_guess_to_features(
     feature_dict: Dict[str, Any],
     processed_feature_dict: Dict[str, Any],
     initial_guess_pdb_path: str,

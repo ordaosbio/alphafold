@@ -41,7 +41,7 @@ from alphafold.model import model
 from alphafold.relax import relax
 import jax.numpy as jnp
 import numpy as np
-from initial_guess import add_initial_guess_to_features
+from initial_guess_utils import add_initial_guess_to_features
 
 # Internal import (7716).
 
